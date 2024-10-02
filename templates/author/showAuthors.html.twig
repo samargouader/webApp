@@ -15,15 +15,14 @@
             <td>{{ author.id }}</td>
             <td>{{ author.authorName|upper }}</td>
             <td>{{ author.nbrBooks }}</td>
-            <td><img src="{{ asset(author.picture) }}"></td>
-            <td><a href="{{ path("app_author",{'id':author.id}) }}">showAuthor</a></td>
+            <td>{{ author.picture }}</td>
         </tr {% endfor %}>
     </table>
     <h1>this table contains {{ authors|length }}
         authors and {{ total_books }} books</h1>
 
 {% else %}
-    <h1>The table is not defined or empty</h1>
+   <h1>The table is not defined or empty</h1>
 {% endif %}
 </body>
 </html>
