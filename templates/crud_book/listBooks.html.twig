@@ -1,0 +1,14 @@
+<html>
+<head></head>
+<body>
+<h1>Table of Books</h1>
+<table>
+    <tr><th>id</th><th>Titre</th><th>Date de Publication</th></tr>
+    <tr {%for book in book%}>
+        <td>{{ book.id }}</td>
+        <td>{{ book.title }}</td>
+        <td>{{ book.datePublication|date('Y-m-d') }}</td>
+    </tr {% endfor %}>
+</table>
+</body>
+</html>
