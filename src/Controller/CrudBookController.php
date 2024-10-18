@@ -2,34 +2,40 @@
 
 namespace App\Controller;
 
+use App\Entity\Book;
+use App\Form\BookType;
 use App\Repository\BookRepository;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Response;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
-#[Route("crud/book")]
+#[Route('/crud/book')]
 class CrudBookController extends AbstractController
-{
-    #[Route('/list', name: 'app_crud_book')]
-    public function listBooks(BookRepository $bookRepository): Response
+{   //add a new book
+    #[Route('/new', name: 'app_new_book')]
+    public function newBook(BookRepository$repository,
+                            ManagerRegistry $doctrine,
+                            Request $request): Response
     {
-        $book=$bookRepository->findAll();
-        return $this->render('crud_book/listBooks.html.twig', ['book' => $book]);
+        $book = new Book();
+        $message="";
+        $form= $this->createForm(BookType::class,$book);
+        $form->handleRequest($request);
+        if($form->isSubmitted() && $form->isValid()){
+            //check if the book exists
+            $books=$repository->findByTitle($book->getTitle());
+            if(count($books)==0){
+                $em=$doctrine->getManager();
+                $em->persist($book);
+                $em->flush();
+            }else{
+                $message="Book already exists";
+            }
+        }
+        return $this->render('crud_book/form.html.twig',
+            ['form'=>$form->createView(), 'message'=>$message]);
     }
-
-    #[Route('/search', name: 'app_crud_book_search')]
-    public function searchBook(Request $request, BookRepository $bookRepository): Response
-    {
-        $title = $request->query->get('title', '');
-
-        $book = $title ? $bookRepository->findOneBy(['title' => $title]) : null;
-
-        return $this->render('crud_book/searchBook.html.twig', [
-            'book' => $book,
-            'title' => $title
-        ]);
-    }
-
 
 }

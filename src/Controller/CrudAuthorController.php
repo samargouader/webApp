@@ -6,114 +6,89 @@ use App\Entity\Author;
 use App\Form\AuthorType;
 use App\Repository\AuthorRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use MongoDB\Driver\Manager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
-
-#[Route("crud/author")]
-
+#[Route('/crud/author')]
 class CrudAuthorController extends AbstractController
 {
     #[Route('/list', name: 'app_crud_author')]
-    public function listAuthor(AuthorRepository $repository): Response
-    {
-        //$repository= new AuthorRepository(;
+    public function listAuthor(AuthorRepository $repository ): Response
+    {   //$repository= new AuthorRepository();
         $authors=$repository->findAll();
-        return $this->render('crud_author/listAuthor.html.twig', ['authors' => $authors]);
+        return $this->render('crud_author/listAuthor.html.twig',
+            ['authors'=>$authors]);
     }
-
-    #[Route('/search', name: 'app_search_author')]
-    public function searchByName(Request $request, AuthorRepository $repository): Response
+    //search authors by Name
+    #[Route('/search', name:'app_search_author')]
+    public function searchByName(Request $request, AuthorRepository $repository):Response
     {
-        $name = $request->query->get('name');
-
-        //test du code
-        //var_dump($name);
-        //die();
-
-        //fetch the author
-        $authors =$repository->findByName($name);
-
-        return $this->render('crud_author/listAuthor.html.twig', ['authors' => $authors]);
+        $name= $request->query->get('name');
+        //fetch the authors from the daba base by name
+        $authors=$repository->findByName($name);
+        //test de code: var_dump($authors); die();
+        return $this->render('crud_author/listAuthor.html.twig',
+            ['authors'=>$authors]);
     }
 
-    //methode d'insertion d'auteur dans la base de données
-    #[Route('/insert', name: 'app_insert_author')]
+    //method to insert author into the database
+    #[Route("/insert",name:"app_insert_author")]
     public function insertAuthor(ManagerRegistry $doctrine):Response
     {
-        //1. créer une instance statique
-        $author = new Author();
-        $author->setName('Ahmed');
-        $author->setEmail('ahmed@gmail.com');
-        $author->setNbrBooks(10);
-
-        //2. créer une copie du doctrine avec entityManager: $em
-        // use Doctrine\Persistence\ManagerRegistry;
+        //1.crate a static instance
+        $author= new Author();
+        $author->setName('ahmed');
+        $author->setEmail('ahmed@gmail');
+        $author->setNbrBooks(5);
+        //2.crate a copy of the doctrine with entityManager: $em
+        //2.a: use Doctrine\Persistence\ManagerRegistry;
         $em=$doctrine->getManager();
-
-        //3. persister l'objet dans la couche doctrine
+        //2.persist object in the doctrine layer
         $em->persist($author);
-
-        //4. sauvegarder les données
+        //3.save data: object in the database
         $em->flush();
         return $this->redirectToRoute("app_crud_author");
     }
-
-
-    //supprimer un objet de la base de données en utilisant la clé primaire ID
-    #[Route('/delete/{id}', name: 'app_delete_author')]
+    //delete object from the data base using the primary key: ID
+    #[Route("/delete/{id}",name:"app_delete_author")]
     public function deleteAuthor($id, AuthorRepository $repository, ManagerRegistry $doctrine):Response
     {
         //get the object from the database
         $author=$repository->find($id);
-
-        //2. créer une copie du doctrine avec entityManager: $em
-        // use Doctrine\Persistence\ManagerRegistry;
+        //2.crate a copy of the doctrine with entityManager: $em
+        //2.a: use Doctrine\Persistence\ManagerRegistry;
         $em=$doctrine->getManager();
-        //3. supprimer l'objet de la couche doctrine'
+        //3. remove the object from the doctrine layer
         $em->remove($author);
-        //4. sauvegarder les données
+        //4. save the updates in the database
         $em->flush();
         return $this->redirectToRoute("app_crud_author");
-
     }
-
-    //modifier un objet de la base de données en utilisant la clé primaire ID
-    #[Route('/update/{id}', name: 'app_update_author')]
-    public function updateAuthor(Author $author, ManagerRegistry $doctrine): Response
+    //update an author with a specific ID
+    #[Route("/update/{id}",name:"app_update_author")]
+    public function updateAuthor(Author $author,ManagerRegistry $doctrine):Response
     {
-        // get the object from the database
+        //step1.get the object from the database
         //$author=$repository->find($id);
-        //var_dump($author);
-        //die();
-
         $em=$doctrine->getManager();
-        $author->setEmail('Email Updated');
-
-        //sauvegarder les données
+        $author->setEmail('updated email');
         $em->flush();
-
         return $this->redirectToRoute("app_crud_author");
     }
-
-    //une methode pour ajouter un nouveau auteur avec une forme
-    #[Route("/insertForm", name: "app_insert_form_author")]
-    public function insertFormAuthor(Request $request, ManagerRegistry $doctrine): Response
-    {
-        $author= new Author();
-        $form=$this->createForm(AuthorType::class, $author);
+    //method to add a new author with a form submitted by the user
+    #[Route("/insertForm",name:"app_insertForm_author")]
+    public function insertFormAuthor(Request $request, ManagerRegistry $doctrine):Response
+    {   $author= new Author();
+        $form= $this->createForm(AuthorType::class,$author);
         $form=$form->handleRequest($request);
         if($form->isSubmitted() && $form->isValid()){
             $em=$doctrine->getManager();
             $em->persist($author);
             $em->flush();
             return $this->redirectToRoute("app_crud_author");
-
         }
         return $this->render('crud_author/formAuthor.html.twig',
-        ['form' => $form->createView()]);
+            ['form'=>$form->createView()]);
     }
-
 }

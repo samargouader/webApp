@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\BookRepository;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
@@ -17,8 +16,12 @@ class Book
     #[ORM\Column(length: 255)]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    private ?\DateTimeInterface $datePublication = null;
+    #[ORM\Column]
+    private ?int $nbrPages = null;
+
+    #[ORM\ManyToOne(inversedBy: 'books')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Author $author = null;
 
     public function getId(): ?int
     {
@@ -37,14 +40,26 @@ class Book
         return $this;
     }
 
-    public function getDatePublication(): ?\DateTimeInterface
+    public function getNbrPages(): ?int
     {
-        return $this->datePublication;
+        return $this->nbrPages;
     }
 
-    public function setDatePublication(\DateTimeInterface $datePublication): static
+    public function setNbrPages(int $nbrPages): static
     {
-        $this->datePublication = $datePublication;
+        $this->nbrPages = $nbrPages;
+
+        return $this;
+    }
+
+    public function getAuthor(): ?Author
+    {
+        return $this->author;
+    }
+
+    public function setAuthor(?Author $author): static
+    {
+        $this->author = $author;
 
         return $this;
     }
